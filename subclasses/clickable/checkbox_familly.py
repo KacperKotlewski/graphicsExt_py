@@ -1,9 +1,10 @@
-from subclasses.clickable_object import ClickableObject
+from subclasses.main_classes.clickable_object import ClickableObject
+from subclasses.main_classes.function_handler import FunctionHolder
 import graphics as gr
 
-class Checkbox(ClickableObject):
-    def __init__(self, p1, p2, spaceSize=2, checked=False):
-        ClickableObject.__init__(self, p1, p2)
+class _CheckboxFamilly(ClickableObject):
+    def __init__(self, p1:gr.Point, p2:gr.Point, spaceSize:int=5, checked:bool=False, onclick:FunctionHolder=None):
+        ClickableObject.__init__(self, p1, p2, onclick=onclick)
         self.spaceSize = spaceSize
         self.checked = checked
         self.outlinebox = gr.Rectangle(p1, p2)
@@ -11,7 +12,7 @@ class Checkbox(ClickableObject):
         self._setupElemColors()
 
     def __repr__(self):
-        return "Checkbox({}, {}, {})".format(str(self.p1), str(self.p2), str(self.checked))
+        return "_CheckboxFamilly({}, {}, {})".format(str(self.p1), str(self.p2), str(self.checked))
 
     def _setOutline(self, color):
         self._reconfig("outline", color)
@@ -31,11 +32,9 @@ class Checkbox(ClickableObject):
             self.innerbox.setFill(self.config["fill"])
             self.innerbox.setOutline(self.config["fill"])
 
-    def checkClick(self, mouse):
-        if(mouse != None):
-            if( (mouse.x > self.p1.x and mouse.x < self.p2.x) and (mouse.y > self.p1.y and mouse.y < self.p2.y) ):
-                self.checked = not self.checked
-                self._setupElemColors()
+    def _clicked(self):
+        self.checked = not self.checked
+        self._setupElemColors()
 
     def setSpaceSize(self, spaceSize):
         self.spaceSize = spaceSize
@@ -43,9 +42,8 @@ class Checkbox(ClickableObject):
         self.innerbox.p1.y = self.p1.y + spaceSize
         self.innerbox.p2.x = self.p2.x - spaceSize
         self.innerbox.p2.y = self.p2.y - spaceSize
-        if(self.graphwin != None and self.visible):
-            self.innerbox.undraw()
-            self.innerbox.draw(self.graphwin)
+        if(self.graphwin != None and self.config["visible"]):
+            self.redraw()
 
     def _draw(self, graphwin):
         self.outlinebox.draw(graphwin)
@@ -58,10 +56,11 @@ class Checkbox(ClickableObject):
     def _move(self, dx, dy):
         self.outlinebox.move(dx,dy)
         self.innerbox.move(dx,dy)
+        self.p1.move(dx, dy)
+        self.p2.move(dx, dy)
 
     def clone(self):
-        other = Checkbox(self.p1, self.p2, self.spaceSize, self.checked)
+        other = _CheckboxFamilly(self.p1, self.p2, self.spaceSize, self.checked, self.onclickFunc)
         other.config = self.config.copy()
-        other.visible = self.visible
         other.graphwin = self.graphwin
         return other
